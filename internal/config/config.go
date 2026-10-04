@@ -19,10 +19,9 @@ type Config struct {
 }
 
 func Load() (Config, error) {
-
-	if err := godotenv.Load(); err != nil {
-		return Config{}, err
-	}
+	// Load .env when running locally.
+	// In Vercel, environment variables are provided by the platform.
+	_ = godotenv.Load()
 
 	config := Config{
 		RedisHost:        os.Getenv("REDIS_HOST"),
@@ -36,16 +35,26 @@ func Load() (Config, error) {
 	}
 
 	if config.RedisHost == "" {
-		return Config{}, errors.New("RedisHost is required")
-	} else if config.RedisPort == "" {
-		return Config{}, errors.New("RedisPort is required")
-	} else if config.Port == "" {
-		return Config{}, errors.New("Port is required")
-	} else if config.DatabaseURL == "" {
-		return Config{}, errors.New("MongoURI is required")
-	} else if config.JwtSecret == "" {
+		return Config{}, errors.New("REDIS_HOST is required")
+	}
+
+	if config.RedisPort == "" {
+		return Config{}, errors.New("REDIS_PORT is required")
+	}
+
+	if config.Port == "" {
+		return Config{}, errors.New("PORT is required")
+	}
+
+	if config.DatabaseURL == "" {
+		return Config{}, errors.New("DATABASE_URL is required")
+	}
+
+	if config.JwtSecret == "" {
 		return Config{}, errors.New("JWT_SECRET is required")
-	} else if config.EmailWorkerCount == "" {
+	}
+
+	if config.EmailWorkerCount == "" {
 		return Config{}, errors.New("EMAIL_WORKER_COUNT is required")
 	}
 

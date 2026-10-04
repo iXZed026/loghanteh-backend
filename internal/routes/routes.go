@@ -30,6 +30,7 @@ func SetupRoutes(
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:3000",
+			"https://loghanteh-frontend.vercel.app",
 		},
 		AllowMethods: []string{
 			"GET",

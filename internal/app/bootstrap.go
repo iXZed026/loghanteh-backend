@@ -19,7 +19,6 @@ import (
 )
 
 func New() (*App, error) {
-
 	logger := slog.Default()
 
 	cfg, err := config.Load()
@@ -33,23 +32,49 @@ func New() (*App, error) {
 		return nil, err
 	}
 
-	if err := config.ConnectRedis(cfg); err != nil {
-		logger.Error(
-			"failed to connect redis",
-			"error",
-			err,
+	//////////////
+	// Redis
+	//////////////
+
+	var rateLimiter limiter.RateLimiter
+
+	if cfg.EnableRateLimiter {
+		if err := config.ConnectRedis(cfg); err != nil {
+			logger.Error(
+				"failed to connect redis",
+				"error",
+				err,
+			)
+
+			return nil, err
+		}
+
+		logger.Info(
+			"Redis connected successfully!",
 		)
 
-		return nil, err
+		rateLimiter = limiter.NewRedisLimiter(
+			config.Redis,
+		)
+	} else {
+		logger.Info(
+			"Rate limiter disabled",
+		)
+
+		rateLimiter = limiter.NewNoopLimiter()
 	}
 
-	logger.Info(
-		"Redis connected successfully!",
-	)
+	//////////////
+	// Context
+	//////////////
 
 	ctx, cancel := context.WithCancel(
 		context.Background(),
 	)
+
+	//////////////
+	// Database
+	//////////////
 
 	db, err := database.Connect(cfg.DatabaseURL)
 	if err != nil {
@@ -205,14 +230,6 @@ func New() (*App, error) {
 			customerRequestService,
 			logger,
 		)
-
-	//////////////
-	// Rate Limiter
-	//////////////
-
-	rateLimiter := limiter.NewRedisLimiter(
-		config.Redis,
-	)
 
 	//////////////
 	// Router

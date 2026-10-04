@@ -319,7 +319,7 @@ func (h *AuthHandler) VerifyLogin(c *gin.Context) {
 	}
 
 	// Refresh Token → HttpOnly Cookie
-	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetSameSite(http.SameSiteNoneMode)
 
 	c.SetCookie(
 		"refresh_token",

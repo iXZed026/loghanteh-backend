@@ -1,0 +1,42 @@
+{
+    "errors": {
+        "value_must_not_be_empty": "مقدار نمی‌تواند خالی باشد",
+        "internal_server_error": "مشکلی در سرور رخ داده است. لطفاً بعداً دوباره تلاش کنید.",
+        "invalid_input": "ورودی نامعتبر است",
+        "unauthorized": "دسترسی غیرمجاز",
+        "user_already_verified": "کاربر قبلاً تأیید شده است",
+        "verification_token_expired": "توکن تأیید منقضی شده است",
+        "invalid_verification_code": "کد تأیید نامعتبر است",
+        "passwords_do_not_match": "رمزهای عبور مطابقت ندارند",
+        "too_many_requests": "تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی صبر کنید و دوباره تلاش کنید.",
+        "email_already_exists": "این ایمیل قبلاً ثبت شده است",
+        "phone_number_already_exists": "این شماره تلفن قبلاً ثبت شده است",
+        "invalid_credentials": "ایمیل/شماره تلفن یا رمز عبور نامعتبر است",
+        "invalid_password": "رمز عبور نامعتبر است",
+        "user_not_found": "کاربر پیدا نشد",
+        "not_found": "منبع موردنظر پیدا نشد",
+        "insufficient_capacity": "ظرفیت کافی برای این تعداد بلیت وجود ندارد",
+        "customer_request_created_successfully": "درخواست مشتری با موفقیت ثبت شد",
+        "session_seats_fetched_successfully": "صندلی‌های جلسه با موفقیت دریافت شدند",
+        "booking_created_successfully": "رزرو با موفقیت ایجاد شد",
+        "user_bookings_fetched_successfully": "رزروهای کاربر با موفقیت دریافت شدند",
+        "no_resources_provided": "هیچ منبعی برای رزرو ارسال نشده است",
+        "duplicate_resources_provided": "صندلی تکراری در درخواست وجود دارد",
+        "resource_not_found": "یک یا چند صندلی موردنظر پیدا نشد",
+        "resource_already_reserved": "یک یا چند صندلی قبلاً رزرو شده است"
+    },
+    "success": {
+        "verification_required": "تأیید حساب الزامی است",
+        "user_registration_verified_successfully": "ثبت‌نام کاربر با موفقیت تأیید شد",
+        "login_is_successful": "ورود با موفقیت انجام شد",
+        "token_refreshed_successfully": "توکن با موفقیت به‌روزرسانی شد",
+        "logged_out_successfully": "با موفقیت خارج شدید",
+        "user_login_verified_successfully": "ورود کاربر با موفقیت تأیید شد",
+        "verification_code_sent_successfully": "کد تأیید با موفقیت ارسال شد",
+        "verification_successful": "تأیید با موفقیت انجام شد",
+        "password_changed_successfully": "رمز عبور با موفقیت تغییر کرد",
+        "profile_fetched_successfully": "پروفایل با موفقیت دریافت شد",
+        "profile_updated_successfully": "پروفایل با موفقیت به‌روزرسانی شد",
+        "customer_request_created_successfully": "درخواست مشتری با موفقیت ثبت شد"
+    }
+}

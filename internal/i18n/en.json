@@ -1,0 +1,42 @@
+{
+    "errors": {
+        "value_must_not_be_empty": "Value must not be empty",
+        "internal_server_error": "Something went wrong. Please try again later.",
+        "invalid_input": "Invalid input",
+        "unauthorized": "Unauthorized",
+        "user_already_verified": "User already verified",
+        "verification_token_expired": "Verification token has expired",
+        "invalid_verification_code": "Invalid verification code",
+        "passwords_do_not_match": "Passwords do not match",
+        "too_many_requests": "Too many requests. Please wait a moment and try again.",
+        "email_already_exists": "Email already exists",
+        "phone_number_already_exists": "Phone number already exists",
+        "invalid_credentials": "Invalid email/phone or password",
+        "invalid_password": "Invalid password",
+        "user_not_found": "User not found",
+        "not_found": "The requested resource was not found",
+        "insufficient_capacity": "Not enough tickets available",
+        "customer_request_created_successfully": "Customer request created successfully",
+        "session_seats_fetched_successfully": "Session seats fetched successfully",
+        "booking_created_successfully": "Booking created successfully",
+        "user_bookings_fetched_successfully": "User bookings fetched successfully",
+        "no_resources_provided": "No resources were provided",
+        "duplicate_resources_provided": "Duplicate resources were provided",
+        "resource_not_found": "One or more requested resources were not found",
+        "resource_already_reserved": "One or more requested resources are already reserved"
+    },
+    "success": {
+        "verification_required": "Verification required",
+        "user_registration_verified_successfully": "User registration verified successfully",
+        "login_is_successful": "Login is successful",
+        "token_refreshed_successfully": "Token refreshed successfully",
+        "logged_out_successfully": "Logged out successfully",
+        "user_login_verified_successfully": "User login verified successfully",
+        "verification_code_sent_successfully": "Verification code sent successfully",
+        "verification_successful": "Verification successful",
+        "password_changed_successfully": "Password changed successfully",
+        "profile_fetched_successfully": "Profile fetched successfully",
+        "profile_updated_successfully": "Profile updated successfully",
+        "customer_request_created_successfully": "Customer request created successfully"
+    }
+}

@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+
+# Go
+/bin/
+/tmp/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

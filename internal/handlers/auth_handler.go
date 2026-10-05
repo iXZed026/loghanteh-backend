@@ -212,7 +212,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetSameSite(http.SameSiteNoneMode)
 
 	c.SetCookie(
 		"refresh_token",
@@ -257,6 +257,8 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 			return
 		}
 	}
+
+	c.SetSameSite(http.SameSiteNoneMode)
 
 	c.SetCookie(
 		"refresh_token",
@@ -366,11 +368,6 @@ func (h *AuthHandler) ForgetPassword(c *gin.Context) {
 
 	if err != nil {
 
-		h.logger.Error(
-			"forget password failed",
-			"error", err,
-		)
-
 		response.HandleError(
 			c,
 			err,
@@ -414,11 +411,6 @@ func (h *AuthHandler) VerifyForgetPassword(c *gin.Context) {
 	)
 
 	if err != nil {
-
-		h.logger.Error(
-			"verify forget password failed",
-			"error", err,
-		)
 
 		response.HandleError(
 			c,
@@ -464,11 +456,6 @@ func (h *AuthHandler) NewPassword(c *gin.Context) {
 	)
 
 	if err != nil {
-
-		h.logger.Error(
-			"failed to set new password",
-			"error", err,
-		)
 
 		response.HandleError(
 			c,

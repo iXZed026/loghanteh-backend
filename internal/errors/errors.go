@@ -25,6 +25,11 @@ var (
 		Key:  "unauthorized",
 	}
 
+	ErrAfieldForEitherEmailOrPhoneNumber = &AppError{
+		Code: http.StatusBadRequest,
+		Key:  "either_email_phonenumber",
+	}
+
 	ErrUserAlreadyVerified = &AppError{
 		Code: http.StatusConflict,
 		Key:  "user_already_verified",
@@ -85,7 +90,38 @@ var (
 		Key:  "insufficient_capacity",
 	}
 
+	// --------------------------------------------------
+	// Discount Code Errors
+	// --------------------------------------------------
+
+	ErrDiscountCodeNotFound = &AppError{
+		Code: http.StatusNotFound,
+		Key:  "discount_code_not_found",
+	}
+
+	ErrDiscountCodeInactive = &AppError{
+		Code: http.StatusConflict,
+		Key:  "discount_code_inactive",
+	}
+
+	ErrDiscountCodeNotStarted = &AppError{
+		Code: http.StatusConflict,
+		Key:  "discount_code_not_started",
+	}
+
+	ErrDiscountCodeExpired = &AppError{
+		Code: http.StatusGone,
+		Key:  "discount_code_expired",
+	}
+
+	ErrDiscountCodeUsageLimitReached = &AppError{
+		Code: http.StatusConflict,
+		Key:  "discount_code_usage_limit_reached",
+	}
+
+	// --------------------------------------------------
 	// Reservation Errors
+	// --------------------------------------------------
 
 	ErrNoResources = &AppError{
 		Code: http.StatusBadRequest,

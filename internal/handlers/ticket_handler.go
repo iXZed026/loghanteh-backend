@@ -570,6 +570,79 @@ func (h *TicketHandler) CreateBooking(
 // User Bookings
 // --------------------------------------------------
 
+func (h *TicketHandler) GetNextBooking(c *gin.Context) {
+	userID, err := strconv.ParseUint(c.GetString("user_id"), 10, 64)
+	if err != nil || userID == 0 {
+		response.HandleError(c, appErrors.ErrUnauthorized, h.logger)
+		return
+	}
+
+	nextBooking, err := h.ticketService.GetNextBooking(
+		c.Request.Context(),
+		uint(userID),
+		getLanguage(c),
+	)
+	if err != nil {
+		h.logger.Error(
+			"failed to get next booking",
+			"userID", userID,
+			"error", err,
+		)
+		response.HandleError(c, err, h.logger)
+		return
+	}
+
+	response.Success(
+		c,
+		"next_booking_fetched_successfully",
+		nextBooking,
+	)
+}
+
+func (h *TicketHandler) GetBookingCount(c *gin.Context) {
+	bookingID, err := strconv.ParseUint(c.Param("bookingId"), 10, 32)
+	if err != nil || bookingID == 0 {
+		response.HandleError(c, appErrors.ErrInvalidInput, h.logger)
+		return
+	}
+
+	userIDValue, exists := c.Get("user_id")
+	if !exists {
+		response.HandleError(c, appErrors.ErrUnauthorized, h.logger)
+		return
+	}
+	userIDString, ok := userIDValue.(string)
+	if !ok {
+		response.HandleError(c, appErrors.ErrUnauthorized, h.logger)
+		return
+	}
+	userID, err := strconv.ParseUint(userIDString, 10, 32)
+	if err != nil {
+		response.HandleError(c, appErrors.ErrUnauthorized, h.logger)
+		return
+	}
+
+	bookingCount, err := h.ticketService.GetBookingCount(
+		c.Request.Context(),
+		uint(bookingID),
+		uint(userID),
+	)
+	if err != nil {
+		h.logger.Error(
+			"failed to get booking count",
+			"error", err,
+		)
+		response.HandleError(c, err, h.logger)
+		return
+	}
+
+	response.Success(
+		c,
+		"booking_count_fetched_successfully",
+		bookingCount,
+	)
+}
+
 func (h *TicketHandler) GetUserBookings(
 	c *gin.Context,
 ) {

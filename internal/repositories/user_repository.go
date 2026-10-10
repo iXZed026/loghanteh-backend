@@ -210,8 +210,8 @@ func (r *UserRepository) UpdateProfile(
 	ctx context.Context,
 	userID uint,
 	fullName string,
-	email string,
-	phoneNumber string,
+	email *string,
+	phoneNumber *string,
 	dob *time.Time,
 	passwordHash *string,
 ) error {
@@ -230,12 +230,32 @@ func (r *UserRepository) UpdateProfile(
 		updates["passwordhash"] = *passwordHash
 	}
 
-	return r.db.
+	err := r.db.
 		WithContext(ctx).
 		Model(&models.User{}).
 		Where("userid = ?", userID).
 		Updates(updates).
 		Error
+
+	if err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" {
+				switch pgErr.ConstraintName {
+				case "users_email_key":
+					return appErrors.ErrEmailAlreadyExists
+
+				case "users_phonenumber_key":
+					return appErrors.ErrPhoneAlreadyExists
+				}
+			}
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (r *UserRepository) ExistsByEmailExceptUser(

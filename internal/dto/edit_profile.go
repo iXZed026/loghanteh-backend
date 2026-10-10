@@ -12,8 +12,8 @@ type ProfileResponse struct {
 
 type EditProfileRequest struct {
 	FullName        string `json:"fullName" binding:"required,max=150"`
-	Email           string `json:"email" binding:"required,email,max=254"`
-	PhoneNumber     string `json:"phoneNumber" binding:"required,max=20"`
+	PhoneNumber     string `json:"phoneNumber" binding:"omitempty,min=11,max=20"`
+	Email           string `json:"email" binding:"omitempty,email,min=3,max=254"`
 	DOB             string `json:"dob"`
 	CurrentPassword string `json:"currentPassword"`
 	NewPassword     string `json:"newPassword" binding:"omitempty,min=8"`

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 
 	appAuth "loghanteh-project/internal/auth"
@@ -52,22 +53,22 @@ func (s *AuthService) Register(
 		return nil, appErrors.ErrPasswordMismatch
 	}
 
-	emailExists, err := s.userRepository.ExistsByEmail(ctx, email)
-	if err != nil {
-		return nil, appErrors.ErrInternalServer
+	phoneNumber = strings.TrimSpace(phoneNumber)
+	email = strings.TrimSpace(email)
+
+	if phoneNumber == "" && email == "" {
+		return nil, appErrors.ErrAfieldForEitherEmailOrPhoneNumber
 	}
 
-	if emailExists {
-		return nil, appErrors.ErrEmailAlreadyExists
-	}
+	if phoneNumber != "" {
+		phoneExists, err := s.userRepository.ExistsByPhone(ctx, phoneNumber)
+		if err != nil {
+			return nil, appErrors.ErrInternalServer
+		}
 
-	phoneExists, err := s.userRepository.ExistsByPhone(ctx, phoneNumber)
-	if err != nil {
-		return nil, appErrors.ErrInternalServer
-	}
-
-	if phoneExists {
-		return nil, appErrors.ErrPhoneAlreadyExists
+		if phoneExists {
+			return nil, appErrors.ErrPhoneAlreadyExists
+		}
 	}
 
 	passwordHash, err := security.HashPassword(password)
@@ -132,10 +133,22 @@ func (s *AuthService) VerifyRegister(
 		return nil, appErrors.ErrInvalidVerificationCode
 	}
 
+	var email *string
+	if strings.TrimSpace(verification.Email) != "" {
+		value := strings.TrimSpace(verification.Email)
+		email = &value
+	}
+
+	var phoneNumber *string
+	if strings.TrimSpace(verification.PhoneNumber) != "" {
+		value := strings.TrimSpace(verification.PhoneNumber)
+		phoneNumber = &value
+	}
+
 	user := &models.User{
 		FullName:     verification.FullName,
-		PhoneNumber:  verification.PhoneNumber,
-		Email:        verification.Email,
+		Email:        email,
+		PhoneNumber:  phoneNumber,
 		PasswordHash: verification.PasswordHash,
 	}
 
@@ -155,12 +168,11 @@ func (s *AuthService) VerifyRegister(
 	return &dto.RegisterResponse{
 		UserID:            user.UserID,
 		FullName:          user.FullName,
-		Email:             user.Email,
-		PhoneNumber:       user.PhoneNumber,
+		Email:             verification.Email,
+		PhoneNumber:       verification.PhoneNumber,
 		VerificationToken: verificationToken,
 	}, nil
 }
-
 func (s *AuthService) Login(
 	ctx context.Context,
 	emailOrPhone string,
@@ -195,8 +207,8 @@ func (s *AuthService) Login(
 	return &dto.LoginResponse{
 		UserID:            user.UserID,
 		FullName:          user.FullName,
-		Email:             user.Email,
-		PhoneNumber:       user.PhoneNumber,
+		Email:             *user.Email,
+		PhoneNumber:       *user.PhoneNumber,
 		VerificationToken: verificationToken,
 	}, nil
 }
@@ -274,8 +286,8 @@ func (s *AuthService) VerifyLogin(
 	return &dto.VerifyLoginResponse{
 		UserID:      user.UserID,
 		FullName:    user.FullName,
-		Email:       user.Email,
-		PhoneNumber: user.PhoneNumber,
+		Email:       *user.Email,
+		PhoneNumber: *user.PhoneNumber,
 		AccessToken: accessToken,
 	}, refreshToken, nil
 }
@@ -377,8 +389,8 @@ func (s *AuthService) ForgetPassword(
 	return &dto.ForgetPasswordResponse{
 		UserID:            user.UserID,
 		FullName:          user.FullName,
-		Email:             user.Email,
-		PhoneNumber:       user.PhoneNumber,
+		Email:             *user.Email,
+		PhoneNumber:       *user.PhoneNumber,
 		VerificationToken: verificationToken,
 	}, nil
 }
@@ -429,8 +441,8 @@ func (s *AuthService) VerifyForgetPassword(
 	return &dto.VerifyForgetPasswordResponse{
 		UserID:      user.UserID,
 		FullName:    user.FullName,
-		Email:       user.Email,
-		PhoneNumber: user.PhoneNumber,
+		Email:       *user.Email,
+		PhoneNumber: *user.PhoneNumber,
 	}, nil
 }
 

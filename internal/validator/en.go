@@ -7,12 +7,16 @@ var enMessages = map[string]map[string]string{
 	},
 
 	"PhoneNumber": {
-		"required": "Phone number is required.",
+		"required": "Phone number cannot be empty.",
+		"min":      "Phone number must be at least 12 characters.",
+		"max":      "Phone number must be at most 20 characters.",
 	},
 
 	"Email": {
-		"required": "Email is required.",
-		"email":    "Please enter a valid email address.",
+		"required": "Email cannot be empty.",
+		"email":    "The entered email is not valid.",
+		"min":      "Email must be at least 3 characters.",
+		"max":      "Email must be at most 250 characters.",
 	},
 
 	"Password": {

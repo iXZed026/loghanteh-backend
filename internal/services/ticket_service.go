@@ -272,6 +272,7 @@ func (s *TicketService) CreateBooking(
 		req.Quantity,
 		nil,
 		nil,
+		req.DiscountCodeID,
 	)
 	if err != nil {
 		return nil, err
@@ -310,6 +311,27 @@ func (s *TicketService) GetUserBookings(
 	)
 }
 
+func (s *TicketService) GetBookingCount(
+	ctx context.Context,
+	bookingID uint,
+	userID uint,
+) (*dto.BookingCountResponse, error) {
+	return s.bookingRepository.GetBookingCount(ctx, bookingID, userID)
+}
+
+func (s *TicketService) GetNextBooking(
+	ctx context.Context,
+	userID uint,
+	languageCode string,
+) (*dto.NextBookingResponse, error) {
+	languageID, err := s.languageRepository.GetIDByCode(ctx, languageCode)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.bookingRepository.GetNextBooking(ctx, userID, languageID)
+}
+
 // --------------------------------------------------
 // Seats
 // --------------------------------------------------
@@ -338,6 +360,7 @@ func (s *TicketService) CreateSeatBooking(
 		quantity,
 		s.seatResourceProvider,
 		req.SeatIDs,
+		req.DiscountCodeID,
 	)
 	if err != nil {
 		return nil, err
@@ -356,7 +379,6 @@ func (s *TicketService) CreateSeatBooking(
 // User Reserved Session
 // --------------------------------------------------
 
-// User Reserved Session
 func (s *TicketService) GetUserReservedSession(
 	ctx context.Context,
 	userID uint,

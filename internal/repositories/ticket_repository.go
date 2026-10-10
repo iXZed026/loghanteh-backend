@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+
 	"loghanteh-project/internal/dto"
 
 	"github.com/shopspring/decimal"
@@ -857,9 +859,15 @@ func (r *TicketRepository) GetUserReservedSession(
 ) (*dto.UserReservedSessionResponse, error) {
 
 	type sessionRow struct {
-		BookingID  uint            `gorm:"column:bookingId"`
-		Quantity   int             `gorm:"column:quantity"`
-		TotalPrice decimal.Decimal `gorm:"column:totalPrice"`
+		BookingID   uint            `gorm:"column:bookingId"`
+		Quantity    int             `gorm:"column:quantity"`
+		TotalPrice  decimal.Decimal `gorm:"column:totalPrice"`
+		PurchasedAt time.Time       `gorm:"column:purchasedAt"`
+
+		DiscountCodeID *uint           `gorm:"column:discountCodeId"`
+		DiscountAmount decimal.Decimal `gorm:"column:discountAmount"`
+		TicketToken    uuid.UUID       `gorm:"column:ticketToken"`
+		TicketIsValid  bool            `gorm:"column:ticketIsValid"`
 
 		SessionID   uint `gorm:"column:sessionId"`
 		EventID     uint `gorm:"column:eventId"`
@@ -895,7 +903,13 @@ func (r *TicketRepository) GetUserReservedSession(
 		Select(`
 			b.bookingid AS "bookingId",
 			b.quantity AS "quantity",
-			b.totalprice AS "totalPrice",
+			(b.totalprice - COALESCE(b.discountamount, 0)) AS "totalPrice",
+			b.purchasedat AS "purchasedAt",
+
+			b.discountcodeid AS "discountCodeId",
+			COALESCE(b.discountamount, 0) AS "discountAmount",
+			b.tickettoken AS "ticketToken",
+			b.ticketisvalid AS "ticketIsValid",
 
 			es.sessionid AS "sessionId",
 			es.eventid AS "eventId",
@@ -971,6 +985,10 @@ func (r *TicketRepository) GetUserReservedSession(
 		return nil, gorm.ErrRecordNotFound
 	}
 
+	// --------------------------------------------------
+	// Reserved Seats
+	// --------------------------------------------------
+
 	seats := make([]dto.SessionSeatResponse, 0)
 
 	err = r.db.
@@ -1000,6 +1018,10 @@ func (r *TicketRepository) GetUserReservedSession(
 		return nil, err
 	}
 
+	// --------------------------------------------------
+	// Cinema Details
+	// --------------------------------------------------
+
 	var cinemaDetails *dto.CinemaDetailResponse
 
 	if row.EventTypeID == cinemaEventTypeID {
@@ -1012,6 +1034,10 @@ func (r *TicketRepository) GetUserReservedSession(
 			IMDBScore:    row.IMDBScore,
 		}
 	}
+
+	// --------------------------------------------------
+	// Theater Details
+	// --------------------------------------------------
 
 	var theaterDetails *dto.TheaterDetailResponse
 
@@ -1029,6 +1055,10 @@ func (r *TicketRepository) GetUserReservedSession(
 		}
 	}
 
+	// --------------------------------------------------
+	// Response
+	// --------------------------------------------------
+
 	return &dto.UserReservedSessionResponse{
 		BookingID:   row.BookingID,
 		SessionID:   row.SessionID,
@@ -1036,8 +1066,14 @@ func (r *TicketRepository) GetUserReservedSession(
 		EventTypeID: row.EventTypeID,
 		HallID:      row.HallID,
 
-		Quantity:   row.Quantity,
-		TotalPrice: row.TotalPrice,
+		Quantity:    row.Quantity,
+		TotalPrice:  row.TotalPrice,
+		PurchasedAt: row.PurchasedAt,
+
+		DiscountCodeID: row.DiscountCodeID,
+		DiscountAmount: row.DiscountAmount,
+		TicketToken:    row.TicketToken,
+		TicketIsValid:  row.TicketIsValid,
 
 		HallName:      row.HallName,
 		EventTypeName: row.EventType,

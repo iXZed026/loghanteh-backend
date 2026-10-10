@@ -56,7 +56,7 @@ func SetupAuthRoutes(
 
 		auth.POST(
 			"/login/forgot-password",
-			middleware.RateLimiter(rateLimiter, 3, logger),
+			middleware.RateLimiter(rateLimiter, 30, logger),
 			authHandler.ForgetPassword,
 		)
 

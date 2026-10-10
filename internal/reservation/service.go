@@ -3,11 +3,13 @@ package reservation
 import (
 	"context"
 	"errors"
+	"time"
 
 	appErrors "loghanteh-project/internal/errors"
 	"loghanteh-project/internal/models"
 	"loghanteh-project/internal/repositories"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
@@ -34,7 +36,9 @@ func (s *Service) CreateBooking(
 	quantity int,
 	provider ResourceProvider,
 	resourceIDs []uint,
+	discountCodeID *uint,
 ) (*models.Booking, error) {
+
 	if quantity < 1 {
 		return nil, appErrors.ErrInvalidInput
 	}
@@ -85,11 +89,65 @@ func (s *Service) CreateBooking(
 			)
 		}
 
+		var discountAmount decimal.Decimal
+
+		if discountCodeID != nil {
+			discountCode, err := s.bookingRepository.GetDiscountCodeForBooking(
+				tx,
+				ctx,
+				*discountCodeID,
+			)
+
+			if err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return appErrors.ErrDiscountCodeNotFound
+				}
+
+				return err
+			}
+
+			if !discountCode.IsActive {
+				return appErrors.ErrDiscountCodeInactive
+			}
+
+			now := time.Now()
+
+			if now.Before(discountCode.StartAt) {
+				return appErrors.ErrDiscountCodeNotStarted
+			}
+
+			if now.After(discountCode.ExpiresAt) {
+				return appErrors.ErrDiscountCodeExpired
+			}
+
+			if discountCode.UsageLimit > 0 &&
+				discountCode.UsedCount >= discountCode.UsageLimit {
+				return appErrors.ErrDiscountCodeUsageLimitReached
+			}
+
+			discountAmount = totalPrice.
+				Mul(discountCode.DiscountPercent).
+				Div(decimal.NewFromInt(100))
+
+			if discountCode.MaxDiscountAmount.GreaterThan(decimal.Zero) &&
+				discountAmount.GreaterThan(discountCode.MaxDiscountAmount) {
+				discountAmount = discountCode.MaxDiscountAmount
+			}
+
+			if discountAmount.GreaterThan(totalPrice) {
+				discountAmount = totalPrice
+			}
+		}
+
 		booking = models.Booking{
-			UserID:     userID,
-			SessionID:  sessionID,
-			Quantity:   quantity,
-			TotalPrice: totalPrice,
+			UserID:         userID,
+			SessionID:      sessionID,
+			Quantity:       quantity,
+			TotalPrice:     totalPrice,
+			DiscountCodeID: discountCodeID,
+			DiscountAmount: discountAmount,
+			TicketToken:    uuid.New(),
+			TicketIsValid:  true,
 		}
 
 		if err := s.bookingRepository.Create(
@@ -98,6 +156,16 @@ func (s *Service) CreateBooking(
 			&booking,
 		); err != nil {
 			return err
+		}
+
+		if discountCodeID != nil {
+			if err := s.bookingRepository.IncrementDiscountUsage(
+				tx,
+				ctx,
+				*discountCodeID,
+			); err != nil {
+				return err
+			}
 		}
 
 		if provider != nil {

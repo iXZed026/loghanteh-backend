@@ -113,6 +113,19 @@ func SetupTicketsRoutes(
 		// --------------------------------------------------
 		// Bookings
 		// --------------------------------------------------
+		tickets.GET(
+			"/bookings/next",
+			middleware.AuthMiddleware(jwtService, logger),
+			middleware.RateLimiter(rateLimiter, 30, logger),
+			ticketHandler.GetNextBooking,
+		)
+
+		tickets.GET(
+			"/bookings/:bookingId/count",
+			middleware.AuthMiddleware(jwtService, logger),
+			middleware.RateLimiter(rateLimiter, 30, logger),
+			ticketHandler.GetBookingCount,
+		)
 
 		tickets.GET(
 			"/bookings",

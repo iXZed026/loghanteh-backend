@@ -19,6 +19,7 @@ func SetupRoutes(
 	profileHandler *handlers.ProfileHandler,
 	ticketHandler *handlers.TicketHandler,
 	customerRequestHandler *handlers.CustomerRequestHandler,
+	discountCodeHandler *handlers.DiscountCodeHandler,
 	jwtService *auth.JWTService,
 	rateLimiter limiter.RateLimiter,
 ) {
@@ -79,6 +80,14 @@ func SetupRoutes(
 			api,
 			logger,
 			customerRequestHandler,
+			rateLimiter,
+		)
+
+		SetupDiscountCodeRoutes(
+			api,
+			logger,
+			discountCodeHandler,
+			jwtService,
 			rateLimiter,
 		)
 	}

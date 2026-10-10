@@ -6,8 +6,8 @@ type RegisterVerification struct {
 	RegisterVerificationID string `gorm:"type:uuid;primaryKey;column:registerverificationid;default:gen_random_uuid()" json:"-"`
 
 	FullName     string `gorm:"column:fullname;type:varchar(150);not null" json:"-"`
-	PhoneNumber  string `gorm:"column:phonenumber;type:varchar(20);not null;unique" json:"-"`
-	Email        string `gorm:"column:email;type:varchar(254);not null;unique" json:"-"`
+	PhoneNumber  string `gorm:"column:phonenumber;type:varchar(20);unique" json:"-"`
+	Email        string `gorm:"column:email;type:varchar(254);unique" json:"-"`
 	PasswordHash string `gorm:"column:passwordhash;type:text;not null" json:"-"`
 
 	Token     string    `gorm:"column:token;type:text;not null;unique" json:"-"`

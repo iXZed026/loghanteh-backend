@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 
 	"loghanteh-project/internal/dto"
 	"loghanteh-project/internal/models"
@@ -60,6 +61,59 @@ func (r *BookingRepository) Create(
 	return tx.
 		WithContext(ctx).
 		Create(booking).
+		Error
+}
+
+// --------------------------------------------------
+// Discount Code
+// --------------------------------------------------
+
+func (r *BookingRepository) GetDiscountCodeForBooking(
+	tx *gorm.DB,
+	ctx context.Context,
+	discountCodeID uint,
+) (*models.DiscountCode, error) {
+
+	var discountCode models.DiscountCode
+
+	err := tx.
+		WithContext(ctx).
+		Clauses(
+			clause.Locking{
+				Strength: "UPDATE",
+			},
+		).
+		Where(
+			"discountcodeid = ?",
+			discountCodeID,
+		).
+		First(&discountCode).
+		Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &discountCode, nil
+}
+
+func (r *BookingRepository) IncrementDiscountUsage(
+	tx *gorm.DB,
+	ctx context.Context,
+	discountCodeID uint,
+) error {
+
+	return tx.
+		WithContext(ctx).
+		Model(&models.DiscountCode{}).
+		Where(
+			"discountcodeid = ?",
+			discountCodeID,
+		).
+		UpdateColumn(
+			"usedcount",
+			gorm.Expr("usedcount + ?", 1),
+		).
 		Error
 }
 
@@ -179,6 +233,72 @@ func (r *BookingRepository) DecreaseSessionCapacity(
 // User bookings
 // --------------------------------------------------
 
+func (r *BookingRepository) GetBookingCount(
+	ctx context.Context,
+	bookingID uint,
+	userID uint,
+) (*dto.BookingCountResponse, error) {
+	var count int64
+
+	err := r.db.
+		WithContext(ctx).
+		Model(&models.Booking{}).
+		Select("quantity").
+		Where("bookingid = ? AND userid = ?", bookingID, userID).
+		Scan(&count).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.BookingCountResponse{Count: count}, nil
+}
+
+func (r *BookingRepository) GetNextBooking(
+	ctx context.Context,
+	userID uint,
+	languageID uint,
+) (*dto.NextBookingResponse, error) {
+	var nextBooking dto.NextBookingResponse
+
+	err := r.db.
+		WithContext(ctx).
+		Table("bookings AS b").
+		Select(`
+			b.bookingid AS "bookingId",
+			COALESCE(ets.name, '') AS "name",
+			b.tickettoken AS "ticketToken",
+			es.startat AS "startAt"
+		`).
+		Joins(`
+			INNER JOIN eventsession AS es
+				ON es.sessionid = b.sessionid
+		`).
+		Joins(`
+			INNER JOIN events AS e
+				ON e.eventid = es.eventid
+		`).
+		Joins(`
+			LEFT JOIN eventstranslations AS ets
+				ON ets.eventid = e.eventid
+				AND ets.languagesid = ?
+		`, languageID).
+		Where("b.userid = ?", userID).
+		Where("es.startat > ?", time.Now()).
+		Order("es.startat ASC").
+		Limit(1).
+		Scan(&nextBooking).
+		Error
+	if err != nil {
+		return nil, err
+	}
+	if nextBooking.StartAt.IsZero() {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	return &nextBooking, nil
+}
+
 func (r *BookingRepository) GetUserBookings(
 	ctx context.Context,
 	userID uint,
@@ -201,8 +321,14 @@ func (r *BookingRepository) GetUserBookings(
 			es.startat AS "startAt",
 			es.duration AS "duration",
 			b.quantity AS "quantity",
-			b.totalprice AS "totalPrice",
-			b.purchasedat AS "purchasedAt"
+			(
+				b.totalprice - COALESCE(b.discountamount, 0)
+			) AS "totalPrice",
+			b.purchasedat AS "purchasedAt",
+			b.discountcodeid AS "discountCodeId",
+			COALESCE(b.discountamount, 0) AS "discountAmount",
+			b.tickettoken AS "ticketToken",
+			b.ticketisvalid AS "ticketIsValid"
 		`).
 		Joins(`
 			INNER JOIN eventsession AS es

@@ -169,6 +169,11 @@ func New() (*App, error) {
 			db,
 		)
 
+	discountCodeRepository :=
+		repositories.NewDiscountCodeRepository(
+			db,
+		)
+
 	//////////////
 	// Services
 	//////////////
@@ -206,6 +211,11 @@ func New() (*App, error) {
 			customerRequestRepository,
 		)
 
+	discountCodeService :=
+		services.NewDiscountCodeService(
+			discountCodeRepository,
+		)
+
 	//////////////
 	// Handlers
 	//////////////
@@ -231,6 +241,12 @@ func New() (*App, error) {
 			logger,
 		)
 
+	discountCodeHandler :=
+		handlers.NewDiscountCodeHandler(
+			discountCodeService,
+			logger,
+		)
+
 	//////////////
 	// Router
 	//////////////
@@ -244,6 +260,7 @@ func New() (*App, error) {
 		profileHandler,
 		ticketHandler,
 		customerRequestHandler,
+		discountCodeHandler,
 		jwtService,
 		rateLimiter,
 	)

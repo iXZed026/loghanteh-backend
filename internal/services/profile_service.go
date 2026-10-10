@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"loghanteh-project/internal/dto"
@@ -41,6 +42,14 @@ func (s *ProfileService) EditProfile(
 	req dto.EditProfileRequest,
 ) (*dto.EditProfileResponse, error) {
 
+	req.FullName = strings.TrimSpace(req.FullName)
+	req.Email = strings.TrimSpace(req.Email)
+	req.PhoneNumber = strings.TrimSpace(req.PhoneNumber)
+
+	if req.Email == "" && req.PhoneNumber == "" {
+		return nil, appErrors.ErrAfieldForEitherEmailOrPhoneNumber
+	}
+
 	user, err := s.userRepository.FindByIDWithPassword(
 		ctx,
 		userID,
@@ -49,41 +58,41 @@ func (s *ProfileService) EditProfile(
 		return nil, err
 	}
 
-	// Check email
-	emailExists, err := s.userRepository.ExistsByEmailExceptUser(
-		ctx,
-		req.Email,
-		userID,
-	)
+	if req.Email != "" {
+		emailExists, err := s.userRepository.ExistsByEmailExceptUser(
+			ctx,
+			req.Email,
+			userID,
+		)
 
-	if err != nil {
-		return nil, appErrors.ErrInternalServer
+		if err != nil {
+			return nil, appErrors.ErrInternalServer
+		}
+
+		if emailExists {
+			return nil, appErrors.ErrEmailAlreadyExists
+		}
 	}
 
-	if emailExists {
-		return nil, appErrors.ErrEmailAlreadyExists
+	if req.PhoneNumber != "" {
+		phoneExists, err := s.userRepository.ExistsByPhoneExceptUser(
+			ctx,
+			req.PhoneNumber,
+			userID,
+		)
+
+		if err != nil {
+			return nil, appErrors.ErrInternalServer
+		}
+
+		if phoneExists {
+			return nil, appErrors.ErrPhoneAlreadyExists
+		}
 	}
 
-	// Check phone number
-	phoneExists, err := s.userRepository.ExistsByPhoneExceptUser(
-		ctx,
-		req.PhoneNumber,
-		userID,
-	)
-
-	if err != nil {
-		return nil, appErrors.ErrInternalServer
-	}
-
-	if phoneExists {
-		return nil, appErrors.ErrPhoneAlreadyExists
-	}
-
-	// Parse date of birth
 	var dob *time.Time
 
 	if req.DOB != "" {
-
 		parsedDOB, err := time.Parse(
 			"2006-01-02",
 			req.DOB,
@@ -98,10 +107,7 @@ func (s *ProfileService) EditProfile(
 
 	var passwordHash *string
 
-	// Password change
 	if req.CurrentPassword != "" {
-
-		// Current password must be correct
 		if !security.CheckPasswordHash(
 			user.PasswordHash,
 			req.CurrentPassword,
@@ -109,15 +115,12 @@ func (s *ProfileService) EditProfile(
 			return nil, appErrors.ErrInvalidPassword
 		}
 
-		// New password is required
 		if req.NewPassword == "" {
 			return nil, appErrors.ErrInvalidInput
 		}
 	}
 
 	if req.NewPassword != "" {
-
-		// Current password is required
 		if req.CurrentPassword == "" {
 			return nil, appErrors.ErrInvalidInput
 		}
@@ -133,13 +136,22 @@ func (s *ProfileService) EditProfile(
 		passwordHash = &hash
 	}
 
-	// Update profile
+	var email *string
+	if req.Email != "" {
+		email = &req.Email
+	}
+
+	var phoneNumber *string
+	if req.PhoneNumber != "" {
+		phoneNumber = &req.PhoneNumber
+	}
+
 	err = s.userRepository.UpdateProfile(
 		ctx,
 		userID,
 		req.FullName,
-		req.Email,
-		req.PhoneNumber,
+		email,
+		phoneNumber,
 		dob,
 		passwordHash,
 	)

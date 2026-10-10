@@ -1,10 +1,10 @@
 package dto
 
-//Register
+// Register
 type RegisterRequest struct {
 	FullName       string `json:"fullName" binding:"required,max=150"`
-	PhoneNumber    string `json:"phoneNumber" binding:"required,max=20"`
-	Email          string `json:"email" binding:"required,email,max=254"`
+	PhoneNumber    string `json:"phoneNumber" binding:"omitempty,min=11,max=20"`
+	Email          string `json:"email" binding:"omitempty,email,min=3,max=254"`
 	Password       string `json:"password" binding:"required,min=8"`
 	RepeatPassword string `json:"repeatPassword" binding:"required"`
 }
@@ -17,7 +17,7 @@ type RegisterResponse struct {
 	VerificationToken string `json:"verificationToken"`
 }
 
-//Login
+// Login
 type LoginRequest struct {
 	EmailOrPhone string `json:"emailOrPhone" binding:"required,max=254"`
 	Password     string `json:"password" binding:"required,min=8"`
@@ -31,7 +31,7 @@ type LoginResponse struct {
 	VerificationToken string `json:"verificationToken"`
 }
 
-//Forget Password
+// Forget Password
 type ForgetPasswordRequest struct {
 	EmailOrPhone string `json:"emailOrPhone" binding:"required,max=254"`
 }

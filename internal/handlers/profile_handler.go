@@ -206,10 +206,7 @@ func (h *ProfileHandler) EditProfile(
 
 	response.Success(
 		c,
-		i18n.TranslateSuccess(
-			"profile_updated_successfully",
-			c.GetHeader("Accept-Language"),
-		),
+		"profile_updated_successfully",
 		profile,
 	)
 }

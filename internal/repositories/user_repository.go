@@ -164,6 +164,31 @@ func (r *UserRepository) FindByID(
 	return &user, nil
 }
 
+func (r *UserRepository) FindByIDWithProfile(
+	ctx context.Context,
+	userID uint,
+) (*models.User, error) {
+	var user models.User
+
+	err := r.db.
+		WithContext(ctx).
+		Preload("UserType").
+		Preload("UserRole").
+		Where("userid = ?", userID).
+		First(&user).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, appErrors.ErrUserNotFound
+		}
+
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepository) FindByIDWithPassword(
 	ctx context.Context,
 	userID uint,

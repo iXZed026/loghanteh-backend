@@ -9,6 +9,10 @@ type User struct {
 	PhoneNumber  *string    `json:"phone_number" gorm:"column:phonenumber"`
 	DOB          *time.Time `json:"dob,omitempty" gorm:"column:dob"`
 	PasswordHash string     `json:"-" gorm:"column:passwordhash"`
+	UserTypeID   int        `json:"userTypeId" gorm:"column:usertypeid"`
+	UserRoleID   int        `json:"userRoleId" gorm:"column:userroleid"`
+	UserType     UserType   `json:"userType" gorm:"foreignKey:UserTypeID;references:UserTypeID"`
+	UserRole     UserRole   `json:"userRole" gorm:"foreignKey:UserRoleID;references:UserRoleID"`
 }
 
 func (User) TableName() string {

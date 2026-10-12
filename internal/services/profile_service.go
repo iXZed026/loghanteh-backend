@@ -28,7 +28,7 @@ func (s *ProfileService) GetProfile(
 	ctx context.Context,
 	userID uint,
 ) (*models.User, error) {
-	user, err := s.userRepository.FindByID(ctx, userID)
+	user, err := s.userRepository.FindByIDWithProfile(ctx, userID)
 	if err != nil {
 		return nil, appErrors.ErrInternalServer
 	}

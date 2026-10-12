@@ -63,7 +63,7 @@ func (h *ProfileHandler) Profile(c *gin.Context) {
 		return
 	}
 
-	user, err := h.profileService.GetProfile(
+	profile, err := h.profileService.GetProfile(
 		c.Request.Context(),
 		uint(id),
 	)
@@ -75,7 +75,7 @@ func (h *ProfileHandler) Profile(c *gin.Context) {
 	response.Success(
 		c,
 		"profile_fetched_successfully",
-		user,
+		profile,
 	)
 }
 
